@@ -52,12 +52,22 @@ export const Leaderboard = () => {
   const { data: entries = [] } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
-      return leaderboardData.entries.sort((a, b) => {
-        const aScore = a.statGroups[0]?.scoreHard + a.statGroups[0]?.scoreSoft;
-        const bScore = b.statGroups[0]?.scoreHard + b.statGroups[0]?.scoreSoft;
+      const entries = await getLeaderboardEntries();
+      return entries.sort((a, b) => {
+        const aScore = a.scores.hard + a.scores.soft;
+        const bScore = b.scores.hard + b.scores.soft;
         return bScore - aScore;
       });
     },
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: 5000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchIntervalInBackground: true,
+    retry: false,
+    structuralSharing: false
   });
 
   return (
@@ -89,8 +99,8 @@ export const Leaderboard = () => {
                   <TableCell>{getRankBadge(index + 1)}</TableCell>
                   <TableCell className="font-medium">{entry.name}</TableCell>
                   <TableCell>{entry.uploaderName || 'Anonymous'}</TableCell>
-                  <TableCell className="font-mono">{formatScore(entry.statGroups[0]?.scoreHard)}</TableCell>
-                  <TableCell className="font-mono">{formatScore(entry.statGroups[0]?.scoreSoft)}</TableCell>
+                  <TableCell className="font-mono">{formatScore(entry.scores.hard)}</TableCell>
+                  <TableCell className="font-mono">{formatScore(entry.scores.soft)}</TableCell>
                   <TableCell>{entry.branch}</TableCell>
                   <TableCell>{entry.runType}</TableCell>
                   <TableCell className="font-mono">{entry.runLabel}</TableCell>
@@ -104,10 +114,10 @@ export const Leaderboard = () => {
         </CardContent>
       </Card>
 
-      {entries.length > 0 && entries[0].statGroups[0] && (
+      {entries.length > 0 && (
         <ScoreComposition
-          hardScoreComposition={entries[0].statGroups[0].hardScoreComposition}
-          softScoreComposition={entries[0].statGroups[0].softScoreComposition}
+          hardScoreComposition={entries[0].scores.hardComposition}
+          softScoreComposition={entries[0].scores.softComposition}
         />
       )}
     </div>

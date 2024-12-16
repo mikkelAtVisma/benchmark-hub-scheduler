@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQueryClient } from "@tanstack/react-query";
 import leaderboardData from "../data/leaderboard.json";
-import { uploadToS3 } from "../lib/aws";
+import { uploadEntry } from "../lib/aws";
 
 interface ScoreComponent {
   componentName: string;
@@ -94,18 +94,32 @@ export const SubmitResult = () => {
   const appendToLeaderboard = async (newEntry: BenchmarkResult, uploaderName: string) => {
     const entryWithUploader = {
       ...newEntry,
-      uploaderName
+      uploaderName,
+      metadata: {
+        uploadTimestamp: Date.now(),
+        uploadDate: new Date().toISOString(),
+        fileSize: file?.size || 0,
+        fileName: file?.name || 'unknown'
+      }
     };
 
-    const updatedEntries = [...leaderboardData.entries, entryWithUploader];
+    try {
+      // Upload the entry to S3
+      const filename = `${Date.now()}-${entryWithUploader.name}`;
+      await uploadEntry(entryWithUploader, filename);
 
-    // Update React Query cache
-    queryClient.setQueryData(['leaderboard'], updatedEntries);
-
-    toast({
-      title: "Success!",
-      description: "Entry added to leaderboard",
-    });
+      toast({
+        title: "Success!",
+        description: "Entry added to leaderboard",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload entry",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,10 +135,6 @@ export const SubmitResult = () => {
 
     setIsUploading(true);
     try {
-      // Upload to S3
-      const s3FileName = `${Date.now()}-${file.name}`;
-      await uploadToS3(file, s3FileName);
-      
       // Process the file and update leaderboard
       const resultData = await handleFileRead(file);
       await appendToLeaderboard(resultData, uploaderName);
@@ -134,7 +144,7 @@ export const SubmitResult = () => {
       
       toast({
         title: "Success!",
-        description: "File uploaded to S3 and entry added to leaderboard",
+        description: "Entry added to leaderboard",
       });
     } catch (error) {
       toast({

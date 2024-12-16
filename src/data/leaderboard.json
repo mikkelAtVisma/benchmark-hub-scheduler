@@ -3,6 +3,7 @@
     {
       "name": "gat-worktype1.json",
       "branch": "master",
+      "uploaderName": "John Doe",
       "runLabel": "1734341411370",
       "runType": "CUSTOM",
       "timestamp": 1734341417426,
