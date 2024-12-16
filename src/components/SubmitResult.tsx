@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { uploadToS3 } from "@/lib/aws";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQueryClient } from "@tanstack/react-query";
+import leaderboardData from "../data/leaderboard.json";
 
 interface ScoreComponent {
   componentName: string;
@@ -20,21 +21,47 @@ interface StatGroup {
 
 interface BenchmarkResult {
   name: string;
+  branch: string;
+  runLabel: string;
+  runType: string;
   timestamp: number;
+  timeLimit: number;
+  iteration: number;
+  jobInfo: {
+    id: string;
+    organisationId: string;
+    scheduleType: string;
+    demandType: string;
+    planningHorizon: {
+      startDate: string;
+      endDate: string;
+      fteStartDay: {
+        date: string;
+      };
+      fteEndDay: {
+        date: string;
+      };
+    };
+  };
   statGroups: StatGroup[];
 }
 
 export const SubmitResult = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [name, setName] = useState("");
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+  const queryClient = useQueryClient();
 
   const validateJsonStructure = (data: any): data is BenchmarkResult => {
     return (
       data &&
       typeof data.name === "string" &&
+      typeof data.branch === "string" &&
+      typeof data.runLabel === "string" &&
+      typeof data.runType === "string" &&
       typeof data.timestamp === "number" &&
+      typeof data.timeLimit === "number" &&
+      typeof data.iteration === "number" &&
       Array.isArray(data.statGroups) &&
       data.statGroups.length > 0 &&
       typeof data.statGroups[0].scoreHard === "number" &&
@@ -61,12 +88,28 @@ export const SubmitResult = () => {
     });
   };
 
+  const appendToLeaderboard = async (newEntry: BenchmarkResult) => {
+    const updatedLeaderboard = {
+      entries: [...leaderboardData.entries, newEntry]
+    };
+
+    // In a real application, you would make an API call here to update the leaderboard
+    // For now, we'll just update the query client cache
+    queryClient.setQueryData(['leaderboard'], updatedLeaderboard.entries);
+
+    // Show success message
+    toast({
+      title: "Success!",
+      description: "Entry added to leaderboard",
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !name) {
+    if (!file) {
       toast({
         title: "Error",
-        description: "Please fill in all fields",
+        description: "Please select a file",
         variant: "destructive",
       });
       return;
@@ -75,30 +118,13 @@ export const SubmitResult = () => {
     setIsUploading(true);
     try {
       const resultData = await handleFileRead(file);
-      const filename = `${Date.now()}-${file.name}`;
-      const url = await uploadToS3(file, filename);
-      
-      // Here you would typically save the submission to your database
-      // along with the parsed scores
-      console.log("Submitted:", {
-        name,
-        fileUrl: url,
-        hardScore: resultData.statGroups[0].scoreHard,
-        softScore: resultData.statGroups[0].scoreSoft,
-        timestamp: resultData.timestamp,
-      });
-      
-      toast({
-        title: "Success!",
-        description: "Your result has been uploaded",
-      });
+      await appendToLeaderboard(resultData);
       
       setFile(null);
-      setName("");
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload result",
+        description: error instanceof Error ? error.message : "Failed to process result",
         variant: "destructive",
       });
     } finally {
@@ -113,17 +139,6 @@ export const SubmitResult = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your name"
-              className="bg-background"
-            />
-          </div>
-          
           <div className="space-y-2">
             <Label htmlFor="file">Result File</Label>
             <Input
