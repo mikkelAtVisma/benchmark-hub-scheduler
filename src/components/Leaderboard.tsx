@@ -22,7 +22,7 @@ type StatGroup = {
 
 type LeaderboardEntry = {
   name: string;
-  uploaderName: string;
+  uploaderName?: string;  // Added this line, making it optional with ?
   branch: string;
   runLabel: string;
   runType: string;
