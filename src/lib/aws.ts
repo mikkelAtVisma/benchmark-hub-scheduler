@@ -4,14 +4,15 @@ import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } fr
 const DEV_ACCESS_KEY = "AKIAYZXPSXXWKUZ6Z74D";
 const DEV_SECRET_KEY = "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";
 const DEV_BUCKET = "test-bucket-benchmark-upload";
+const REGION = "eu-west-1";
 
 const s3Client = new S3Client({
-  region: "eu-west-1",
+  region: REGION,
   credentials: {
     accessKeyId: DEV_ACCESS_KEY,
     secretAccessKey: DEV_SECRET_KEY,
   },
-  forcePathStyle: true // Add this to ensure correct URL formatting
+  forcePathStyle: true
 });
 
 const ENTRIES_PREFIX = 'entries/';
@@ -84,47 +85,61 @@ export const uploadEntry = async (entry: any, filename: string): Promise<string[
     ContentType: 'application/json',
   });
 
-  await Promise.all([
-    s3Client.send(fullCommand),
-    s3Client.send(simplifiedCommand)
-  ]);
+  try {
+    await Promise.all([
+      s3Client.send(fullCommand),
+      s3Client.send(simplifiedCommand)
+    ]);
 
-  return [
-    `https://${DEV_BUCKET}.s3.eu-west-1.amazonaws.com/${fullKey}`,
-    `https://${DEV_BUCKET}.s3.eu-west-1.amazonaws.com/${simplifiedKey}`
-  ];
+    return [
+      `https://${DEV_BUCKET}.s3.${REGION}.amazonaws.com/${fullKey}`,
+      `https://${DEV_BUCKET}.s3.${REGION}.amazonaws.com/${simplifiedKey}`
+    ];
+  } catch (error) {
+    console.error('Error uploading entry:', error);
+    throw error;
+  }
 };
 
 export const getLeaderboardEntries = async () => {
   try {
-    const command = new ListObjectsV2Command({
+    // First, list all objects in the simplified entries directory
+    const listCommand = new ListObjectsV2Command({
       Bucket: DEV_BUCKET,
       Prefix: `${ENTRIES_PREFIX}simplified/`,
     });
 
-    const response = await s3Client.send(command);
-    const entries = [];
-
-    if (response.Contents) {
-      for (const object of response.Contents) {
-        if (object.Key) {
-          const getCommand = new GetObjectCommand({
-            Bucket: DEV_BUCKET,
-            Key: object.Key,
-          });
-
-          const response = await s3Client.send(getCommand);
-          const content = await response.Body?.transformToString();
-          if (content) {
-            entries.push(JSON.parse(content));
-          }
-        }
-      }
+    const listResponse = await s3Client.send(listCommand);
+    
+    if (!listResponse.Contents) {
+      console.log('No entries found in bucket');
+      return [];
     }
 
-    return entries;
+    // Fetch all objects in parallel
+    const entryPromises = listResponse.Contents.map(async (object) => {
+      if (!object.Key) return null;
+
+      const getCommand = new GetObjectCommand({
+        Bucket: DEV_BUCKET,
+        Key: object.Key,
+      });
+
+      try {
+        const response = await s3Client.send(getCommand);
+        const content = await response.Body?.transformToString();
+        return content ? JSON.parse(content) : null;
+      } catch (error) {
+        console.error(`Error fetching entry ${object.Key}:`, error);
+        return null;
+      }
+    });
+
+    const entries = await Promise.all(entryPromises);
+    return entries.filter((entry): entry is SimplifiedEntry => entry !== null);
+    
   } catch (error) {
     console.error('Error fetching leaderboard entries:', error);
-    return [];
+    throw error; // Let the error propagate to React Query for proper handling
   }
 };
