@@ -91,6 +91,21 @@ export const SubmitResult = () => {
   };
 
   const appendToLeaderboard = async (newEntry: BenchmarkResult, uploaderName: string) => {
+    // Get existing entries to check for duplicates
+    const existingEntries = await queryClient.fetchQuery({
+      queryKey: ['leaderboard'],
+      queryFn: async () => {
+        const entries = await getLeaderboardEntries();
+        return entries;
+      },
+    });
+
+    // Check for duplicate runLabel
+    const isDuplicate = existingEntries.some(entry => entry.runLabel === newEntry.runLabel);
+    if (isDuplicate) {
+      throw new Error("A result with this run label already exists");
+    }
+
     const entryWithUploader = {
       ...newEntry,
       uploaderName,
