@@ -6,8 +6,13 @@ import { LeaderboardHeader } from "./LeaderboardHeader";
 import { RankBadge } from "./RankBadge";
 import { ScoreDisplay } from "./ScoreDisplay";
 import { LeaderboardEntry } from "../types/leaderboard";
+import { Input } from "./ui/input";
+import { useState } from "react";
 
 export const Leaderboard = () => {
+  const [nameFilter, setNameFilter] = useState("");
+  const [uploaderFilter, setUploaderFilter] = useState("");
+
   const { data: entries = [] } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
@@ -29,6 +34,12 @@ export const Leaderboard = () => {
     structuralSharing: false
   });
 
+  const filteredEntries = entries.filter(entry => {
+    const nameMatch = entry.name.toLowerCase().includes(nameFilter.toLowerCase());
+    const uploaderMatch = (entry.uploaderName || 'Anonymous').toLowerCase().includes(uploaderFilter.toLowerCase());
+    return nameMatch && uploaderMatch;
+  });
+
   const hardScoreComponents = entries.length > 0 
     ? entries[0].scores.hardComposition
         .filter(comp => comp.score !== 0)
@@ -43,13 +54,39 @@ export const Leaderboard = () => {
     <Card className="border-0 bg-secondary/50">
       <CardHeader>
         <CardTitle>Performance Leaderboard</CardTitle>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label htmlFor="nameFilter" className="text-sm text-muted-foreground block mb-2">
+              Filter by Name
+            </label>
+            <Input
+              id="nameFilter"
+              placeholder="Filter by file name..."
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+          <div>
+            <label htmlFor="uploaderFilter" className="text-sm text-muted-foreground block mb-2">
+              Filter by Uploader
+            </label>
+            <Input
+              id="uploaderFilter"
+              placeholder="Filter by uploader..."
+              value={uploaderFilter}
+              onChange={(e) => setUploaderFilter(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto w-full max-w-[95vw]">
           <Table>
             <LeaderboardHeader hardScoreComponents={hardScoreComponents} />
             <TableBody>
-              {entries.map((entry, index) => (
+              {filteredEntries.map((entry, index) => (
                 <>
                   {/* Job Information Row */}
                   <TableRow key={`${entry.name}-${entry.timestamp}-info`} className="hover:bg-secondary/80 border-b-0">
