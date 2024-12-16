@@ -4,17 +4,18 @@ import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } fr
 const DEV_ACCESS_KEY = "AKIAYZXPSXXWKUZ6Z74D";
 const DEV_SECRET_KEY = "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";
 const DEV_BUCKET = "test-bucket-benchmark-upload";
+const REGION = "eu-west-1";
 
 const s3Client = new S3Client({
-  region: "eu-west-1",
+  region: REGION,
   credentials: {
     accessKeyId: DEV_ACCESS_KEY,
     secretAccessKey: DEV_SECRET_KEY,
   },
+  forcePathStyle: true
 });
 
 const ENTRIES_PREFIX = 'entries/';
-const LEADERBOARD_KEY = 'leaderboard.json';
 
 interface SimplifiedEntry {
   name: string;
@@ -57,7 +58,6 @@ const createSimplifiedEntry = (fullEntry: any): SimplifiedEntry => {
 };
 
 export const uploadEntry = async (entry: any, filename: string): Promise<string[]> => {
-  // Ensure uploaderName is present in both full and simplified versions
   const entryWithMetadata = {
     ...entry,
     metadata: {
@@ -68,7 +68,6 @@ export const uploadEntry = async (entry: any, filename: string): Promise<string[
     }
   };
 
-  // Upload full version
   const fullKey = `${ENTRIES_PREFIX}full/${filename}`;
   const fullCommand = new PutObjectCommand({
     Bucket: DEV_BUCKET,
@@ -77,7 +76,6 @@ export const uploadEntry = async (entry: any, filename: string): Promise<string[
     ContentType: 'application/json',
   });
 
-  // Create and upload simplified version
   const simplifiedEntry = createSimplifiedEntry(entryWithMetadata);
   const simplifiedKey = `${ENTRIES_PREFIX}simplified/${filename}`;
   const simplifiedCommand = new PutObjectCommand({
@@ -87,38 +85,61 @@ export const uploadEntry = async (entry: any, filename: string): Promise<string[
     ContentType: 'application/json',
   });
 
-  await Promise.all([
-    s3Client.send(fullCommand),
-    s3Client.send(simplifiedCommand)
-  ]);
+  try {
+    await Promise.all([
+      s3Client.send(fullCommand),
+      s3Client.send(simplifiedCommand)
+    ]);
 
-  return [
-    `https://${DEV_BUCKET}.s3.amazonaws.com/${fullKey}`,
-    `https://${DEV_BUCKET}.s3.amazonaws.com/${simplifiedKey}`
-  ];
+    return [
+      `https://${DEV_BUCKET}.s3.${REGION}.amazonaws.com/${fullKey}`,
+      `https://${DEV_BUCKET}.s3.${REGION}.amazonaws.com/${simplifiedKey}`
+    ];
+  } catch (error) {
+    console.error('Error uploading entry:', error);
+    throw error;
+  }
 };
 
 export const getLeaderboardEntries = async () => {
-  const command = new ListObjectsV2Command({
-    Bucket: DEV_BUCKET,
-    Prefix: `${ENTRIES_PREFIX}simplified/`,
-  });
-
-  const response = await s3Client.send(command);
-  const entries = [];
-
-  for (const object of response.Contents || []) {
-    const getCommand = new GetObjectCommand({
+  try {
+    // First, list all objects in the simplified entries directory
+    const listCommand = new ListObjectsV2Command({
       Bucket: DEV_BUCKET,
-      Key: object.Key!,
+      Prefix: `${ENTRIES_PREFIX}simplified/`,
     });
 
-    const response = await s3Client.send(getCommand);
-    const content = await response.Body?.transformToString();
-    if (content) {
-      entries.push(JSON.parse(content));
+    const listResponse = await s3Client.send(listCommand);
+    
+    if (!listResponse.Contents) {
+      console.log('No entries found in bucket');
+      return [];
     }
-  }
 
-  return entries;
+    // Fetch all objects in parallel
+    const entryPromises = listResponse.Contents.map(async (object) => {
+      if (!object.Key) return null;
+
+      const getCommand = new GetObjectCommand({
+        Bucket: DEV_BUCKET,
+        Key: object.Key,
+      });
+
+      try {
+        const response = await s3Client.send(getCommand);
+        const content = await response.Body?.transformToString();
+        return content ? JSON.parse(content) : null;
+      } catch (error) {
+        console.error(`Error fetching entry ${object.Key}:`, error);
+        return null;
+      }
+    });
+
+    const entries = await Promise.all(entryPromises);
+    return entries.filter((entry): entry is SimplifiedEntry => entry !== null);
+    
+  } catch (error) {
+    console.error('Error fetching leaderboard entries:', error);
+    throw error; // Let the error propagate to React Query for proper handling
+  }
 };
