@@ -4,17 +4,66 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { uploadToS3 } from "@/lib/aws";
 import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface ScoreComponent {
+  componentName: string;
+  score: number;
+}
+
+interface StatGroup {
+  scoreHard: number;
+  scoreSoft: number;
+  hardScoreComposition: ScoreComponent[];
+  softScoreComposition: ScoreComponent[];
+}
+
+interface BenchmarkResult {
+  name: string;
+  timestamp: number;
+  statGroups: StatGroup[];
+}
 
 export const SubmitResult = () => {
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
-  const [score, setScore] = useState("");
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
 
+  const validateJsonStructure = (data: any): data is BenchmarkResult => {
+    return (
+      data &&
+      typeof data.name === "string" &&
+      typeof data.timestamp === "number" &&
+      Array.isArray(data.statGroups) &&
+      data.statGroups.length > 0 &&
+      typeof data.statGroups[0].scoreHard === "number" &&
+      typeof data.statGroups[0].scoreSoft === "number"
+    );
+  };
+
+  const handleFileRead = (file: File): Promise<BenchmarkResult> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const json = JSON.parse(e.target?.result as string);
+          if (!validateJsonStructure(json)) {
+            throw new Error("Invalid JSON structure");
+          }
+          resolve(json);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error("Error reading file"));
+      reader.readAsText(file);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !name || !score) {
+    if (!file || !name) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -25,11 +74,19 @@ export const SubmitResult = () => {
 
     setIsUploading(true);
     try {
+      const resultData = await handleFileRead(file);
       const filename = `${Date.now()}-${file.name}`;
       const url = await uploadToS3(file, filename);
       
       // Here you would typically save the submission to your database
-      console.log("Submitted:", { name, score, fileUrl: url });
+      // along with the parsed scores
+      console.log("Submitted:", {
+        name,
+        fileUrl: url,
+        hardScore: resultData.statGroups[0].scoreHard,
+        softScore: resultData.statGroups[0].scoreSoft,
+        timestamp: resultData.timestamp,
+      });
       
       toast({
         title: "Success!",
@@ -38,11 +95,10 @@ export const SubmitResult = () => {
       
       setFile(null);
       setName("");
-      setScore("");
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to upload result",
+        description: error instanceof Error ? error.message : "Failed to upload result",
         variant: "destructive",
       });
     } finally {
@@ -51,42 +107,42 @@ export const SubmitResult = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto p-6 bg-secondary rounded-lg">
-      <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
-        <Input
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="bg-background"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="score">Score</Label>
-        <Input
-          id="score"
-          type="number"
-          value={score}
-          onChange={(e) => setScore(e.target.value)}
-          className="bg-background mono"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="file">Result File</Label>
-        <Input
-          id="file"
-          type="file"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-          className="bg-background"
-          accept=".json,.csv,.txt"
-        />
-      </div>
-      
-      <Button type="submit" disabled={isUploading} className="w-full">
-        {isUploading ? "Uploading..." : "Submit Result"}
-      </Button>
-    </form>
+    <Card>
+      <CardHeader>
+        <CardTitle>Submit Your Result</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="bg-background"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="file">Result File</Label>
+            <Input
+              id="file"
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="bg-background"
+              accept=".json"
+            />
+            <p className="text-sm text-muted-foreground">
+              Upload your JSON result file
+            </p>
+          </div>
+          
+          <Button type="submit" disabled={isUploading} className="w-full">
+            {isUploading ? "Uploading..." : "Submit Result"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
