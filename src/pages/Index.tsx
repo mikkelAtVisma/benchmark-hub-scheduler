@@ -14,6 +14,15 @@ const Index = () => {
       
       <div className="container py-8 space-y-8 relative">
         <header className="text-center space-y-6 mb-12">
+          {/* Logo */}
+          <div className="flex justify-center mb-8 animate-fade-in">
+            <img 
+              src="/workforce-wombats-logo.png" 
+              alt="Workforce Wombats Logo" 
+              className="w-48 h-48 object-contain hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+
           <div className="inline-flex items-center justify-center space-x-2 bg-secondary/50 px-4 py-2 rounded-full mb-4 animate-fade-in">
             <Sparkles className="w-5 h-5 text-primary" />
             <span className="text-sm font-medium">2024 Official Workforce Management Performance Olympics</span>
