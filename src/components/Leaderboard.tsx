@@ -30,7 +30,9 @@ export const Leaderboard = () => {
   });
 
   const hardScoreComponents = entries.length > 0 
-    ? entries[0].scores.hardComposition.map(comp => comp.componentName)
+    ? entries[0].scores.hardComposition
+        .filter(comp => comp.score !== 0)
+        .map(comp => comp.componentName)
     : [];
 
   const formatTimestamp = (timestamp: number) => {
@@ -43,7 +45,7 @@ export const Leaderboard = () => {
         <CardTitle>Performance Leaderboard</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto w-full max-w-[95vw]">
           <Table>
             <LeaderboardHeader hardScoreComponents={hardScoreComponents} />
             <TableBody>
@@ -75,6 +77,7 @@ export const Leaderboard = () => {
                           const score = entry.scores.hardComposition.find(
                             comp => comp.componentName === component
                           )?.score || 0;
+                          if (score === 0) return null;
                           return (
                             <div key={component}>
                               <div className="text-xs text-muted-foreground mb-1">
