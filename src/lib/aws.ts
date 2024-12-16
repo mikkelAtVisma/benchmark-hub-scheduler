@@ -1,6 +1,5 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 
-
 // Only use these values for local development and testing
 const DEV_ACCESS_KEY = "AKIAYZXPSXXWKUZ6Z74D";
 const DEV_SECRET_KEY = "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";
@@ -19,6 +18,7 @@ const LEADERBOARD_KEY = 'leaderboard.json';
 
 interface SimplifiedEntry {
   name: string;
+  uploaderName?: string;
   branch: string;
   runLabel: string;
   runType: string;
@@ -39,6 +39,7 @@ const createSimplifiedEntry = (fullEntry: any): SimplifiedEntry => {
   
   return {
     name: fullEntry.name,
+    uploaderName: fullEntry.uploaderName,
     branch: fullEntry.branch,
     runLabel: fullEntry.runLabel,
     runType: fullEntry.runType,
