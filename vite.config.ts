@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/WFM-Performance-Olympics/',
+  base: mode === 'production' ? '/WFM-Performance-Olympics/' : '/',
   build: {
     manifest: true,
     rollupOptions: {
