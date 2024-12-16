@@ -52,11 +52,7 @@ export const Leaderboard = () => {
   const { data: entries = [] } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
-      // Try to get data from localStorage first
-      const storedData = localStorage.getItem('leaderboardEntries');
-      const entries = storedData ? JSON.parse(storedData) : leaderboardData.entries;
-      
-      return entries.sort((a, b) => {
+      return leaderboardData.entries.sort((a, b) => {
         const aScore = a.statGroups[0]?.scoreHard + a.statGroups[0]?.scoreSoft;
         const bScore = b.statGroups[0]?.scoreHard + b.statGroups[0]?.scoreSoft;
         return bScore - aScore;
