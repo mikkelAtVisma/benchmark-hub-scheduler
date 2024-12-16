@@ -33,7 +33,7 @@ export const ScoreDisplay = ({ score, componentName, fileName, entries }: ScoreD
 
   return (
     <span className={cn("font-mono", getScoreColor())}>
-      {score > 0 ? score.toFixed(2) + "%" : score.toLocaleString()}
+      {score > 0 ? score.toFixed(2) : score.toLocaleString()}
     </span>
   );
 };
