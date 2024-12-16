@@ -88,7 +88,7 @@ export const Leaderboard = () => {
             <LeaderboardHeader hardScoreComponents={hardScoreComponents} />
             <TableBody>
               {filteredEntries.map((entry, index) => (
-                <React.Fragment key={`${entry.name}-${entry.timestamp}`}>
+                <React.Fragment key={index}>
                   {/* Job Information Row */}
                   <TableRow className="hover:bg-secondary/80 border-b-0">
                     <TableCell rowSpan={2}><RankBadge rank={index + 1} /></TableCell>
