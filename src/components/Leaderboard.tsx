@@ -4,21 +4,46 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import leaderboardData from "../data/leaderboard.json";
 
+type ScoreComposition = {
+  componentName: string;
+  score: number;
+};
+
+type StatGroup = {
+  timestamp: number;
+  round: number;
+  scoreHard: number;
+  scoreSoft: number;
+  missingMinutesMinDemand: number;
+  hardScoreComposition: ScoreComposition[];
+  softScoreComposition: ScoreComposition[];
+};
+
 type LeaderboardEntry = {
   name: string;
-  hardScore: number;
-  softScore: number;
-  timestamp: string;
-  totalScore: number;
-  components: {
-    IEval: number;
-    BRH: number;
-    MATH: number;
-    GPQA: number;
-    MUSR: number;
-    "MMLU-PRO": number;
-    "CFD-Cost": number;
+  branch: string;
+  runLabel: string;
+  runType: string;
+  timestamp: number;
+  timeLimit: number;
+  iteration: number;
+  jobInfo: {
+    id: string;
+    organisationId: string;
+    scheduleType: string;
+    demandType: string;
+    planningHorizon: {
+      startDate: string;
+      endDate: string;
+      fteStartDay: {
+        date: string;
+      };
+      fteEndDay: {
+        date: string;
+      };
+    };
   };
+  statGroups: StatGroup[];
 };
 
 const getRankBadge = (rank: number) => {
@@ -41,13 +66,21 @@ const formatScore = (score: number) => {
   return score.toLocaleString();
 };
 
+const formatTimestamp = (timestamp: number) => {
+  return new Date(timestamp).toISOString().split('T')[0];
+};
+
 export const Leaderboard = () => {
   const { data: entries = [] } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
       // In a real application, this would be an API call
       // For now, we're just returning the data from our JSON file
-      return leaderboardData.entries.sort((a, b) => b.totalScore - a.totalScore);
+      return leaderboardData.entries.sort((a, b) => {
+        const aScore = a.statGroups[0]?.scoreHard + a.statGroups[0]?.scoreSoft;
+        const bScore = b.statGroups[0]?.scoreHard + b.statGroups[0]?.scoreSoft;
+        return bScore - aScore;
+      });
     },
   });
 
@@ -64,31 +97,27 @@ export const Leaderboard = () => {
               <TableHead>Name</TableHead>
               <TableHead>Hard Score</TableHead>
               <TableHead>Soft Score</TableHead>
-              <TableHead>IEval</TableHead>
-              <TableHead>BRH</TableHead>
-              <TableHead>MATH</TableHead>
-              <TableHead>GPQA</TableHead>
-              <TableHead>MUSR</TableHead>
-              <TableHead>MMLU-PRO</TableHead>
-              <TableHead>CFD-Cost</TableHead>
+              <TableHead>Branch</TableHead>
+              <TableHead>Run Type</TableHead>
+              <TableHead>Run Label</TableHead>
+              <TableHead>Time Limit</TableHead>
+              <TableHead>Iteration</TableHead>
               <TableHead className="text-right">Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {entries.map((entry, index) => (
-              <TableRow key={entry.name} className="hover:bg-secondary/80">
+              <TableRow key={entry.name + entry.timestamp} className="hover:bg-secondary/80">
                 <TableCell>{getRankBadge(index + 1)}</TableCell>
                 <TableCell className="font-medium">{entry.name}</TableCell>
-                <TableCell className="font-mono">{formatScore(entry.hardScore)}</TableCell>
-                <TableCell className="font-mono">{formatScore(entry.softScore)}</TableCell>
-                <TableCell className="font-mono">{formatScore(entry.components.IEval)}</TableCell>
-                <TableCell className="font-mono">{formatScore(entry.components.BRH)}</TableCell>
-                <TableCell className="font-mono">{formatScore(entry.components.MATH)}</TableCell>
-                <TableCell className="font-mono">{formatScore(entry.components.GPQA)}</TableCell>
-                <TableCell className="font-mono">{formatScore(entry.components.MUSR)}</TableCell>
-                <TableCell className="font-mono">{formatScore(entry.components["MMLU-PRO"])}</TableCell>
-                <TableCell className="font-mono">{formatScore(entry.components["CFD-Cost"])}</TableCell>
-                <TableCell className="text-right font-mono">{entry.timestamp}</TableCell>
+                <TableCell className="font-mono">{formatScore(entry.statGroups[0]?.scoreHard)}</TableCell>
+                <TableCell className="font-mono">{formatScore(entry.statGroups[0]?.scoreSoft)}</TableCell>
+                <TableCell>{entry.branch}</TableCell>
+                <TableCell>{entry.runType}</TableCell>
+                <TableCell className="font-mono">{entry.runLabel}</TableCell>
+                <TableCell>{entry.timeLimit}s</TableCell>
+                <TableCell>{entry.iteration}</TableCell>
+                <TableCell className="text-right font-mono">{formatTimestamp(entry.timestamp)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
