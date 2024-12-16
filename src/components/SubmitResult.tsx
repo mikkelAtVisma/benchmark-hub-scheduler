@@ -5,7 +5,6 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQueryClient } from "@tanstack/react-query";
-import leaderboardData from "../data/leaderboard.json";
 import { uploadEntry } from "../lib/aws";
 
 interface ScoreComponent {
