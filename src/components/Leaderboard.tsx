@@ -22,6 +22,7 @@ type StatGroup = {
 
 type LeaderboardEntry = {
   name: string;
+  uploaderName: string;
   branch: string;
   runLabel: string;
   runType: string;
@@ -71,6 +72,7 @@ export const Leaderboard = () => {
               <TableRow className="hover:bg-secondary/80">
                 <TableHead className="w-[60px]">Rank</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Uploaded By</TableHead>
                 <TableHead>Hard Score</TableHead>
                 <TableHead>Soft Score</TableHead>
                 <TableHead>Branch</TableHead>
@@ -86,6 +88,7 @@ export const Leaderboard = () => {
                 <TableRow key={entry.name + entry.timestamp} className="hover:bg-secondary/80">
                   <TableCell>{getRankBadge(index + 1)}</TableCell>
                   <TableCell className="font-medium">{entry.name}</TableCell>
+                  <TableCell>{entry.uploaderName || 'Anonymous'}</TableCell>
                   <TableCell className="font-mono">{formatScore(entry.statGroups[0]?.scoreHard)}</TableCell>
                   <TableCell className="font-mono">{formatScore(entry.statGroups[0]?.scoreSoft)}</TableCell>
                   <TableCell>{entry.branch}</TableCell>

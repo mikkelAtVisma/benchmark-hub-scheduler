@@ -48,6 +48,7 @@ interface BenchmarkResult {
 
 export const SubmitResult = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [uploaderName, setUploaderName] = useState("");
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const queryClient = useQueryClient();
@@ -88,16 +89,18 @@ export const SubmitResult = () => {
     });
   };
 
-  const appendToLeaderboard = async (newEntry: BenchmarkResult) => {
-    const updatedLeaderboard = {
-      entries: [...leaderboardData.entries, newEntry]
+  const appendToLeaderboard = async (newEntry: BenchmarkResult, uploaderName: string) => {
+    const entryWithUploader = {
+      ...newEntry,
+      uploaderName // Add the uploader name to the entry
     };
 
-    // In a real application, you would make an API call here to update the leaderboard
-    // For now, we'll just update the query client cache
+    const updatedLeaderboard = {
+      entries: [...leaderboardData.entries, entryWithUploader]
+    };
+
     queryClient.setQueryData(['leaderboard'], updatedLeaderboard.entries);
 
-    // Show success message
     toast({
       title: "Success!",
       description: "Entry added to leaderboard",
@@ -106,10 +109,10 @@ export const SubmitResult = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) {
+    if (!file || !uploaderName.trim()) {
       toast({
         title: "Error",
-        description: "Please select a file",
+        description: "Please select a file and enter your name",
         variant: "destructive",
       });
       return;
@@ -118,9 +121,10 @@ export const SubmitResult = () => {
     setIsUploading(true);
     try {
       const resultData = await handleFileRead(file);
-      await appendToLeaderboard(resultData);
+      await appendToLeaderboard(resultData, uploaderName);
       
       setFile(null);
+      setUploaderName("");
     } catch (error) {
       toast({
         title: "Error",
@@ -139,6 +143,17 @@ export const SubmitResult = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="uploaderName">Your Name</Label>
+            <Input
+              id="uploaderName"
+              value={uploaderName}
+              onChange={(e) => setUploaderName(e.target.value)}
+              placeholder="Enter your name"
+              className="bg-background"
+            />
+          </div>
+          
           <div className="space-y-2">
             <Label htmlFor="file">Result File</Label>
             <Input
