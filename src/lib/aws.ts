@@ -39,7 +39,7 @@ const createSimplifiedEntry = (fullEntry: any): SimplifiedEntry => {
   
   return {
     name: fullEntry.name,
-    uploaderName: fullEntry.uploaderName,
+    uploaderName: fullEntry.uploaderName || 'Anonymous',
     branch: fullEntry.branch,
     runLabel: fullEntry.runLabel,
     runType: fullEntry.runType,
@@ -57,17 +57,28 @@ const createSimplifiedEntry = (fullEntry: any): SimplifiedEntry => {
 };
 
 export const uploadEntry = async (entry: any, filename: string): Promise<string[]> => {
+  // Ensure uploaderName is present in both full and simplified versions
+  const entryWithMetadata = {
+    ...entry,
+    metadata: {
+      uploadTimestamp: Date.now(),
+      uploadDate: new Date().toISOString(),
+      fileSize: entry.fileSize || 0,
+      fileName: entry.fileName || 'unknown'
+    }
+  };
+
   // Upload full version
   const fullKey = `${ENTRIES_PREFIX}full/${filename}`;
   const fullCommand = new PutObjectCommand({
     Bucket: DEV_BUCKET,
     Key: fullKey,
-    Body: JSON.stringify(entry),
+    Body: JSON.stringify(entryWithMetadata),
     ContentType: 'application/json',
   });
 
   // Create and upload simplified version
-  const simplifiedEntry = createSimplifiedEntry(entry);
+  const simplifiedEntry = createSimplifiedEntry(entryWithMetadata);
   const simplifiedKey = `${ENTRIES_PREFIX}simplified/${filename}`;
   const simplifiedCommand = new PutObjectCommand({
     Bucket: DEV_BUCKET,
@@ -90,7 +101,7 @@ export const uploadEntry = async (entry: any, filename: string): Promise<string[
 export const getLeaderboardEntries = async () => {
   const command = new ListObjectsV2Command({
     Bucket: DEV_BUCKET,
-    Prefix: `${ENTRIES_PREFIX}simplified/`,  // Only fetch simplified versions for the leaderboard
+    Prefix: `${ENTRIES_PREFIX}simplified/`,
   });
 
   const response = await s3Client.send(command);
