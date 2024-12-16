@@ -48,37 +48,53 @@ export const Leaderboard = () => {
             <LeaderboardHeader hardScoreComponents={hardScoreComponents} />
             <TableBody>
               {entries.map((entry, index) => (
-                <TableRow key={entry.name + entry.timestamp} className="hover:bg-secondary/80">
-                  <TableCell><RankBadge rank={index + 1} /></TableCell>
-                  <TableCell className="font-medium">{entry.name}</TableCell>
-                  <TableCell>{entry.uploaderName || 'Anonymous'}</TableCell>
-                  <TableCell className="font-mono">
-                    <ScoreDisplay score={entry.scores.hard} />
-                  </TableCell>
-                  {hardScoreComponents.map((component) => {
-                    const score = entry.scores.hardComposition.find(
-                      comp => comp.componentName === component
-                    )?.score || 0;
-                    return (
-                      <TableCell key={component}>
-                        <ScoreDisplay 
-                          score={score}
-                          componentName={component}
-                          fileName={entry.name}
-                          entries={entries}
-                        />
-                      </TableCell>
-                    );
-                  })}
-                  <TableCell>{entry.branch}</TableCell>
-                  <TableCell>{entry.runType}</TableCell>
-                  <TableCell className="font-mono">{entry.runLabel}</TableCell>
-                  <TableCell>{entry.timeLimit}s</TableCell>
-                  <TableCell>{entry.iteration}</TableCell>
-                  <TableCell className="text-right font-mono">
-                    {formatTimestamp(entry.timestamp)}
-                  </TableCell>
-                </TableRow>
+                <>
+                  {/* Job Information Row */}
+                  <TableRow key={`${entry.name}-${entry.timestamp}-info`} className="hover:bg-secondary/80 border-b-0">
+                    <TableCell rowSpan={2}><RankBadge rank={index + 1} /></TableCell>
+                    <TableCell rowSpan={2} className="font-medium">{entry.name}</TableCell>
+                    <TableCell rowSpan={2}>{entry.uploaderName || 'Anonymous'}</TableCell>
+                    <TableCell>{entry.branch}</TableCell>
+                    <TableCell>{entry.runType}</TableCell>
+                    <TableCell className="font-mono">{entry.runLabel}</TableCell>
+                    <TableCell>{entry.timeLimit}s</TableCell>
+                    <TableCell>{entry.iteration}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      {formatTimestamp(entry.timestamp)}
+                    </TableCell>
+                  </TableRow>
+                  {/* Score Information Row */}
+                  <TableRow key={`${entry.name}-${entry.timestamp}-scores`} className="hover:bg-secondary/80">
+                    <TableCell colSpan={7} className="border-t-0">
+                      <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Total Hard Score</div>
+                          <ScoreDisplay score={entry.scores.hard} />
+                        </div>
+                        {hardScoreComponents.map((component) => {
+                          const score = entry.scores.hardComposition.find(
+                            comp => comp.componentName === component
+                          )?.score || 0;
+                          return (
+                            <div key={component}>
+                              <div className="text-xs text-muted-foreground mb-1">
+                                {component.split('-').map(word => 
+                                  word.charAt(0).toUpperCase() + word.slice(1)
+                                ).join(' ')}
+                              </div>
+                              <ScoreDisplay 
+                                score={score}
+                                componentName={component}
+                                fileName={entry.name}
+                                entries={entries}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                </>
               ))}
             </TableBody>
           </Table>
