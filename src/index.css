@@ -33,9 +33,14 @@
 }
 
 .grid-pattern {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    url('https://images.unsplash.com/photo-1438565434616-3ef039228b15?auto=format&fit=crop&w=300&q=80');
+  background-size: 20px 20px, 20px 20px, 150px;
+  background-repeat: repeat, repeat, repeat;
+  background-position: center;
+  opacity: 0.1;
 }
 
 .mono {
