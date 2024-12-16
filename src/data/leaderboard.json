@@ -1,0 +1,194 @@
+{
+  "entries": [
+    {
+      "name": "gat-worktype1.json",
+      "branch": "master",
+      "runLabel": "1734341411370",
+      "runType": "CUSTOM",
+      "timestamp": 1734341417426,
+      "timeLimit": 30,
+      "iteration": 0,
+      "jobInfo": {
+        "id": "0",
+        "organisationId": "DepartmentCode#1",
+        "scheduleType": "CALENDAR",
+        "demandType": "SHIFT_DEMAND",
+        "planningHorizon": {
+          "startDate": "2024-09-29",
+          "endDate": "2024-12-02",
+          "fteStartDay": {
+            "date": "2024-09-30"
+          },
+          "fteEndDay": {
+            "date": "2024-12-01"
+          }
+        }
+      },
+      "statGroups": [
+        {
+          "timestamp": 1734341417426,
+          "round": 1,
+          "scoreHard": -11108757,
+          "scoreSoft": -250080,
+          "missingMinutesMinDemand": 223620.0,
+          "hardScoreComposition": [
+            {
+              "componentName": "rest-between-shifts-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "rest-between-shifts-fairness-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "periodic-rest-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "hard-demand-monitor",
+              "score": -500160
+            },
+            {
+              "componentName": "period-distribution-fairness-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "soft-demand-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "period-distribution-score-monitor",
+              "score": -5200
+            },
+            {
+              "componentName": "week-max-fte-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "employee-availability-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "vacant-employee-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "employee-utilization-fairness-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "week-min-fte-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "attribute-demand-score-monitor",
+              "score": -1070
+            },
+            {
+              "componentName": "global-fte-monitor",
+              "score": -414240
+            },
+            {
+              "componentName": "employee-shift-prioritization-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "employee-utilization-score-monitor",
+              "score": -4428087
+            },
+            {
+              "componentName": "employee-availability-fairness-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "pattern-score-monitor",
+              "score": -5760000
+            },
+            {
+              "componentName": "periodic-rest-fairness-score-monitor",
+              "score": 0
+            }
+          ],
+          "softScoreComposition": [
+            {
+              "componentName": "rest-between-shifts-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "rest-between-shifts-fairness-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "periodic-rest-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "hard-demand-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "period-distribution-fairness-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "soft-demand-monitor",
+              "score": -250080
+            },
+            {
+              "componentName": "period-distribution-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "week-max-fte-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "employee-availability-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "vacant-employee-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "employee-utilization-fairness-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "week-min-fte-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "attribute-demand-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "global-fte-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "employee-shift-prioritization-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "employee-utilization-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "employee-availability-fairness-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "pattern-score-monitor",
+              "score": 0
+            },
+            {
+              "componentName": "periodic-rest-fairness-score-monitor",
+              "score": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
