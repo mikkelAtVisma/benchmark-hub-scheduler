@@ -9,19 +9,32 @@
     <meta property="og:image" content="/og-image.png" />
     
     <!-- Development mode scripts -->
-    <script type="module" src="http://localhost:8080/@vite/client"></script>
     <script type="module">
-      import RefreshRuntime from 'http://localhost:8080/@react-refresh'
-      RefreshRuntime.injectIntoGlobalHook(window)
-      window.$RefreshReg$ = () => {}
-      window.$RefreshSig$ = () => (type) => type
-      window.__vite_plugin_react_preamble_installed__ = true
+      // Only load development scripts when not in production
+      if (import.meta.env.DEV) {
+        const script1 = document.createElement('script');
+        script1.type = 'module';
+        script1.src = 'http://localhost:8080/@vite/client';
+        document.head.appendChild(script1);
+
+        const script2 = document.createElement('script');
+        script2.type = 'module';
+        const refreshContent = `
+          import RefreshRuntime from 'http://localhost:8080/@react-refresh';
+          RefreshRuntime.injectIntoGlobalHook(window);
+          window.$RefreshReg$ = () => {};
+          window.$RefreshSig$ = () => (type) => type;
+          window.__vite_plugin_react_preamble_installed__ = true;
+        `;
+        script2.textContent = refreshContent;
+        document.head.appendChild(script2);
+      }
     </script>
   </head>
 
   <body>
     <div id="root"></div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="http://localhost:8080/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
