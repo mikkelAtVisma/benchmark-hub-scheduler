@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQueryClient } from "@tanstack/react-query";
 import leaderboardData from "../data/leaderboard.json";
+import { uploadToS3 } from "../lib/aws";
 
 interface ScoreComponent {
   componentName: string;
@@ -44,6 +45,7 @@ interface BenchmarkResult {
     };
   };
   statGroups: StatGroup[];
+  uploaderName?: string;
 }
 
 export const SubmitResult = () => {
@@ -92,7 +94,7 @@ export const SubmitResult = () => {
   const appendToLeaderboard = async (newEntry: BenchmarkResult, uploaderName: string) => {
     const entryWithUploader = {
       ...newEntry,
-      uploaderName // Add the uploader name to the entry
+      uploaderName
     };
 
     const updatedLeaderboard = {
@@ -120,11 +122,21 @@ export const SubmitResult = () => {
 
     setIsUploading(true);
     try {
+      // Upload to S3
+      const s3FileName = `${Date.now()}-${file.name}`;
+      await uploadToS3(file, s3FileName);
+      
+      // Process the file and update leaderboard
       const resultData = await handleFileRead(file);
       await appendToLeaderboard(resultData, uploaderName);
       
       setFile(null);
       setUploaderName("");
+      
+      toast({
+        title: "Success!",
+        description: "File uploaded to S3 and entry added to leaderboard",
+      });
     } catch (error) {
       toast({
         title: "Error",
