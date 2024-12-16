@@ -97,11 +97,17 @@ export const SubmitResult = () => {
       uploaderName
     };
 
-    const updatedLeaderboard = {
-      entries: [...leaderboardData.entries, entryWithUploader]
-    };
+    // Get existing entries from localStorage or use default data
+    const existingData = localStorage.getItem('leaderboardEntries');
+    const currentEntries = existingData ? JSON.parse(existingData) : leaderboardData.entries;
 
-    queryClient.setQueryData(['leaderboard'], updatedLeaderboard.entries);
+    const updatedEntries = [...currentEntries, entryWithUploader];
+
+    // Update localStorage
+    localStorage.setItem('leaderboardEntries', JSON.stringify(updatedEntries));
+
+    // Update React Query cache
+    queryClient.setQueryData(['leaderboard'], updatedEntries);
 
     toast({
       title: "Success!",
