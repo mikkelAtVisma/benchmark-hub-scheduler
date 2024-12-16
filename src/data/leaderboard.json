@@ -1,0 +1,36 @@
+{
+  "entries": [
+    {
+      "name": "Alice",
+      "hardScore": -11108757,
+      "softScore": -250080,
+      "timestamp": "2024-02-20",
+      "totalScore": -11358837,
+      "components": {
+        "IEval": 80.63,
+        "BRH": 62.51,
+        "MATH": 39.95,
+        "GPQA": 20.36,
+        "MUSR": 38.53,
+        "MMLU-PRO": 70.03,
+        "CFD-Cost": 33.01
+      }
+    },
+    {
+      "name": "Bob",
+      "hardScore": -10108757,
+      "softScore": -150080,
+      "timestamp": "2024-02-19",
+      "totalScore": -10258837,
+      "components": {
+        "IEval": 81.63,
+        "BRH": 61.92,
+        "MATH": 40.71,
+        "GPQA": 20.02,
+        "MUSR": 36.37,
+        "MMLU-PRO": 66.80,
+        "CFD-Cost": 15.00
+      }
+    }
+  ]
+}

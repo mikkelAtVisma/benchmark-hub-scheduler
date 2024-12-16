@@ -1,42 +1,25 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import leaderboardData from "../data/leaderboard.json";
 
-// Mock data - replace with real data from your backend
-const mockData = [
-  { 
-    name: "Alice",
-    hardScore: -11108757,
-    softScore: -250080,
-    timestamp: "2024-02-20",
-    totalScore: -11358837,
-    components: {
-      IEval: 80.63,
-      BRH: 62.51,
-      MATH: 39.95,
-      GPQA: 20.36,
-      MUSR: 38.53,
-      "MMLU-PRO": 70.03,
-      "CFD-Cost": 33.01
-    }
-  },
-  { 
-    name: "Bob",
-    hardScore: -10108757,
-    softScore: -150080,
-    timestamp: "2024-02-19",
-    totalScore: -10258837,
-    components: {
-      IEval: 81.63,
-      BRH: 61.92,
-      MATH: 40.71,
-      GPQA: 20.02,
-      MUSR: 36.37,
-      "MMLU-PRO": 66.80,
-      "CFD-Cost": 15.00
-    }
-  },
-].sort((a, b) => b.totalScore - a.totalScore);
+type LeaderboardEntry = {
+  name: string;
+  hardScore: number;
+  softScore: number;
+  timestamp: string;
+  totalScore: number;
+  components: {
+    IEval: number;
+    BRH: number;
+    MATH: number;
+    GPQA: number;
+    MUSR: number;
+    "MMLU-PRO": number;
+    "CFD-Cost": number;
+  };
+};
 
 const getRankBadge = (rank: number) => {
   switch(rank) {
@@ -59,6 +42,15 @@ const formatScore = (score: number) => {
 };
 
 export const Leaderboard = () => {
+  const { data: entries = [] } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: async () => {
+      // In a real application, this would be an API call
+      // For now, we're just returning the data from our JSON file
+      return leaderboardData.entries.sort((a, b) => b.totalScore - a.totalScore);
+    },
+  });
+
   return (
     <Card className="border-0 bg-secondary/50">
       <CardHeader>
@@ -83,7 +75,7 @@ export const Leaderboard = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockData.map((entry, index) => (
+            {entries.map((entry, index) => (
               <TableRow key={entry.name} className="hover:bg-secondary/80">
                 <TableCell>{getRankBadge(index + 1)}</TableCell>
                 <TableCell className="font-medium">{entry.name}</TableCell>
