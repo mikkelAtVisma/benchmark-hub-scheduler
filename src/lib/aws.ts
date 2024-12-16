@@ -11,10 +11,10 @@ const s3Client = new S3Client({
     accessKeyId: DEV_ACCESS_KEY,
     secretAccessKey: DEV_SECRET_KEY,
   },
+  forcePathStyle: true // Add this to ensure correct URL formatting
 });
 
 const ENTRIES_PREFIX = 'entries/';
-const LEADERBOARD_KEY = 'leaderboard.json';
 
 interface SimplifiedEntry {
   name: string;
@@ -57,7 +57,6 @@ const createSimplifiedEntry = (fullEntry: any): SimplifiedEntry => {
 };
 
 export const uploadEntry = async (entry: any, filename: string): Promise<string[]> => {
-  // Ensure uploaderName is present in both full and simplified versions
   const entryWithMetadata = {
     ...entry,
     metadata: {
@@ -68,7 +67,6 @@ export const uploadEntry = async (entry: any, filename: string): Promise<string[
     }
   };
 
-  // Upload full version
   const fullKey = `${ENTRIES_PREFIX}full/${filename}`;
   const fullCommand = new PutObjectCommand({
     Bucket: DEV_BUCKET,
@@ -77,7 +75,6 @@ export const uploadEntry = async (entry: any, filename: string): Promise<string[
     ContentType: 'application/json',
   });
 
-  // Create and upload simplified version
   const simplifiedEntry = createSimplifiedEntry(entryWithMetadata);
   const simplifiedKey = `${ENTRIES_PREFIX}simplified/${filename}`;
   const simplifiedCommand = new PutObjectCommand({
@@ -93,32 +90,41 @@ export const uploadEntry = async (entry: any, filename: string): Promise<string[
   ]);
 
   return [
-    `https://${DEV_BUCKET}.s3.amazonaws.com/${fullKey}`,
-    `https://${DEV_BUCKET}.s3.amazonaws.com/${simplifiedKey}`
+    `https://${DEV_BUCKET}.s3.eu-west-1.amazonaws.com/${fullKey}`,
+    `https://${DEV_BUCKET}.s3.eu-west-1.amazonaws.com/${simplifiedKey}`
   ];
 };
 
 export const getLeaderboardEntries = async () => {
-  const command = new ListObjectsV2Command({
-    Bucket: DEV_BUCKET,
-    Prefix: `${ENTRIES_PREFIX}simplified/`,
-  });
-
-  const response = await s3Client.send(command);
-  const entries = [];
-
-  for (const object of response.Contents || []) {
-    const getCommand = new GetObjectCommand({
+  try {
+    const command = new ListObjectsV2Command({
       Bucket: DEV_BUCKET,
-      Key: object.Key!,
+      Prefix: `${ENTRIES_PREFIX}simplified/`,
     });
 
-    const response = await s3Client.send(getCommand);
-    const content = await response.Body?.transformToString();
-    if (content) {
-      entries.push(JSON.parse(content));
-    }
-  }
+    const response = await s3Client.send(command);
+    const entries = [];
 
-  return entries;
+    if (response.Contents) {
+      for (const object of response.Contents) {
+        if (object.Key) {
+          const getCommand = new GetObjectCommand({
+            Bucket: DEV_BUCKET,
+            Key: object.Key,
+          });
+
+          const response = await s3Client.send(getCommand);
+          const content = await response.Body?.transformToString();
+          if (content) {
+            entries.push(JSON.parse(content));
+          }
+        }
+      }
+    }
+
+    return entries;
+  } catch (error) {
+    console.error('Error fetching leaderboard entries:', error);
+    return [];
+  }
 };
