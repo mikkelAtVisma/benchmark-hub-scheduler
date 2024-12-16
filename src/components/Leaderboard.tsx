@@ -29,7 +29,6 @@ export const Leaderboard = () => {
     structuralSharing: false
   });
 
-  // Get unique component names from all entries
   const hardScoreComponents = entries.length > 0 
     ? entries[0].scores.hardComposition.map(comp => comp.componentName)
     : [];
@@ -44,44 +43,46 @@ export const Leaderboard = () => {
         <CardTitle>Performance Leaderboard</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <LeaderboardHeader hardScoreComponents={hardScoreComponents} />
-          <TableBody>
-            {entries.map((entry, index) => (
-              <TableRow key={entry.name + entry.timestamp} className="hover:bg-secondary/80">
-                <TableCell><RankBadge rank={index + 1} /></TableCell>
-                <TableCell className="font-medium">{entry.name}</TableCell>
-                <TableCell>{entry.uploaderName || 'Anonymous'}</TableCell>
-                <TableCell className="font-mono">
-                  <ScoreDisplay score={entry.scores.hard} />
-                </TableCell>
-                {hardScoreComponents.map((component) => {
-                  const score = entry.scores.hardComposition.find(
-                    comp => comp.componentName === component
-                  )?.score || 0;
-                  return (
-                    <TableCell key={component}>
-                      <ScoreDisplay 
-                        score={score}
-                        componentName={component}
-                        fileName={entry.name}
-                        entries={entries}
-                      />
-                    </TableCell>
-                  );
-                })}
-                <TableCell>{entry.branch}</TableCell>
-                <TableCell>{entry.runType}</TableCell>
-                <TableCell className="font-mono">{entry.runLabel}</TableCell>
-                <TableCell>{entry.timeLimit}s</TableCell>
-                <TableCell>{entry.iteration}</TableCell>
-                <TableCell className="text-right font-mono">
-                  {formatTimestamp(entry.timestamp)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <Table>
+            <LeaderboardHeader hardScoreComponents={hardScoreComponents} />
+            <TableBody>
+              {entries.map((entry, index) => (
+                <TableRow key={entry.name + entry.timestamp} className="hover:bg-secondary/80">
+                  <TableCell><RankBadge rank={index + 1} /></TableCell>
+                  <TableCell className="font-medium">{entry.name}</TableCell>
+                  <TableCell>{entry.uploaderName || 'Anonymous'}</TableCell>
+                  <TableCell className="font-mono">
+                    <ScoreDisplay score={entry.scores.hard} />
+                  </TableCell>
+                  {hardScoreComponents.map((component) => {
+                    const score = entry.scores.hardComposition.find(
+                      comp => comp.componentName === component
+                    )?.score || 0;
+                    return (
+                      <TableCell key={component}>
+                        <ScoreDisplay 
+                          score={score}
+                          componentName={component}
+                          fileName={entry.name}
+                          entries={entries}
+                        />
+                      </TableCell>
+                    );
+                  })}
+                  <TableCell>{entry.branch}</TableCell>
+                  <TableCell>{entry.runType}</TableCell>
+                  <TableCell className="font-mono">{entry.runLabel}</TableCell>
+                  <TableCell>{entry.timeLimit}s</TableCell>
+                  <TableCell>{entry.iteration}</TableCell>
+                  <TableCell className="text-right font-mono">
+                    {formatTimestamp(entry.timestamp)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
