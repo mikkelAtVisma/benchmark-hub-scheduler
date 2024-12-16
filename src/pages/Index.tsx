@@ -1,3 +1,6 @@
+import { Leaderboard } from "@/components/Leaderboard";
+import { SubmitResult } from "@/components/SubmitResult";
+
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
