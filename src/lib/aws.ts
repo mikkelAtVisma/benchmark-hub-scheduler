@@ -1,5 +1,28 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
+/*
+Important: Set this CORS configuration in your S3 bucket:
+
+{
+    "CORSRules": [
+        {
+            "AllowedHeaders": [
+                "*"
+            ],
+            "AllowedMethods": [
+                "PUT",
+                "POST",
+                "GET"
+            ],
+            "AllowedOrigins": [
+                "*"
+            ],
+            "ExposeHeaders": []
+        }
+    ]
+}
+*/
+
 // Only use these values for local development and testing
 const DEV_ACCESS_KEY = "your-dev-access-key";
 const DEV_SECRET_KEY = "your-dev-secret-key";
