@@ -7,32 +7,6 @@
     <meta name="description" content="Lovable Generated Project" />
     <meta name="author" content="Lovable" />
     <meta property="og:image" content="/og-image.png" />
-    
-    <!-- Development mode scripts -->
-    <script type="module">
-        import { devServerUrl } from './src/config/dev.ts';
-        
-        const baseUrl = import.meta.env.BASE_URL || '/';
-        
-        if (import.meta.env.DEV) {
-          const script1 = document.createElement('script');
-          script1.type = 'module';
-          script1.src = `${devServerUrl}${baseUrl}@vite/client`;
-          document.head.appendChild(script1);
-
-          const script2 = document.createElement('script');
-          script2.type = 'module';
-          const refreshContent = `
-            import RefreshRuntime from '${devServerUrl}${baseUrl}@react-refresh';
-            RefreshRuntime.injectIntoGlobalHook(window);
-            window.$RefreshReg$ = () => {};
-            window.$RefreshSig$ = () => (type) => type;
-            window.__vite_plugin_react_preamble_installed__ = true;
-          `;
-          script2.textContent = refreshContent;
-          document.head.appendChild(script2);
-        }
-    </script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
   </head>
 
