@@ -12,7 +12,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename={import.meta.env.PROD ? '/WFM-Performance-Olympics' : '/'}>
+      <BrowserRouter basename={'/'}>
         <Routes>
           <Route path="/" element={<Index />} />
         </Routes>
