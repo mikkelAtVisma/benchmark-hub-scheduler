@@ -5,12 +5,13 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/',
+  base: '/WFM-Performance-Olympics/',
   build: {
     manifest: true,
     rollupOptions: {
       input: '/src/main.tsx'
-    }
+    },
+    outDir: 'dist',
   },
   server: {
     host: "::",

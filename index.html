@@ -12,15 +12,18 @@
     <script type="module">
       // Only load development scripts when not in production
       if (import.meta.env.DEV) {
+        const baseUrl = import.meta.env.BASE_URL || '/';
+        const devServerUrl = 'http://localhost:8080';
+        
         const script1 = document.createElement('script');
         script1.type = 'module';
-        script1.src = 'http://localhost:8080/@vite/client';
+        script1.src = `${devServerUrl}${baseUrl}@vite/client`;
         document.head.appendChild(script1);
 
         const script2 = document.createElement('script');
         script2.type = 'module';
         const refreshContent = `
-          import RefreshRuntime from 'http://localhost:8080/@react-refresh';
+          import RefreshRuntime from '${devServerUrl}${baseUrl}@react-refresh';
           RefreshRuntime.injectIntoGlobalHook(window);
           window.$RefreshReg$ = () => {};
           window.$RefreshSig$ = () => (type) => type;
