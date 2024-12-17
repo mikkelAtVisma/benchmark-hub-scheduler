@@ -10,8 +10,7 @@
     
     <!-- Development mode scripts -->
     <script type="module">
-      // Only load development scripts when not in production
-      if (import.meta.env.DEV) {
+
         const baseUrl = import.meta.env.BASE_URL || '/';
         const devServerUrl = 'http://localhost:8080';
         
@@ -31,8 +30,9 @@
         `;
         script2.textContent = refreshContent;
         document.head.appendChild(script2);
-      }
+      
     </script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
   </head>
 
   <body>
