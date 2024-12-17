@@ -1,0 +1,1 @@
+export const devServerUrl = 'http://localhost:8080';
